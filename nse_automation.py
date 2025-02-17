@@ -17,22 +17,26 @@ def initialize_driver(download_dir):
     options = Options()
     prefs = {
         "download.default_directory": download_dir,
-        "profile.default_content_settings.popups": 0,
         "download.prompt_for_download": False,
+        "download.default_directory": download_dir,
+        "profile.default_content_settings.popups": 0,
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
 
-    # Configure for headless operation and cloud compatibility
-    options.add_argument("--headless")  # Run in headless mode
-    options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
-    options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
+    # Headless configuration
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
-    # Ensure Chromium binary is used
-    options.binary_location = "/usr/bin/chromium-browser"  # Path to Chromium
+    # Use pre-installed Chromium and ChromeDriver
+    options.binary_location = "/usr/bin/chromium"
 
-    # Use webdriver_manager to install ChromeDriver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Point directly to the system ChromeDriver
+    driver = webdriver.Chrome(
+        service=Service(executable_path="/usr/bin/chromedriver"),
+        options=options
+    )
     return driver
 
 def organize_files_by_type(file_path, destination_folder, log_file):
