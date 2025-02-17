@@ -30,11 +30,13 @@ def initialize_driver(download_dir):
     options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
     options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
 
-    # Ensure chromium binary is used in cloud
+    # Path to the Chromium binary on Streamlit Cloud
     options.binary_location = "/usr/bin/chromium-browser"  # Update the location based on the container path
     
     # Automatically download and configure the correct chromedriver for the environment
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    service = Service(ChromeDriverManager().install())  # This automatically installs the correct chromedriver
+
+    driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 def organize_files_by_type(file_path, base_folder, log_file):
@@ -164,7 +166,7 @@ def main():
 
     if start_process:
         # Prepare the environment for download
-        download_dir = "C:\\Users\\kprev\\Downloads\\NSE"  # Make sure this is correct for your environment
+        download_dir = "/mnt/data"  # Make sure this is correct for your environment (update if needed)
         current_date = download_date.strftime("%d.%m.%Y")
         date_folder_path = os.path.join(download_dir, current_date)
 
