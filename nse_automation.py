@@ -94,6 +94,7 @@ def main():
 
             log_file_path = os.path.join(date_folder_path, f"{current_date}.log")
             with open(log_file_path, "w", encoding="utf-8") as log_file:
+                driver = None
                 try:
                     # Initialize WebDriver
                     driver = initialize_driver(download_dir)
@@ -163,7 +164,9 @@ def main():
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
                 finally:
-                    driver.quit()
+                    # Ensure the driver quits even in case of an error
+                    if driver:
+                        driver.quit()
 
 
 if __name__ == "__main__":
