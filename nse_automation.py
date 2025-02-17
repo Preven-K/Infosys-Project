@@ -14,16 +14,7 @@ import shutil
 import hashlib
 import subprocess
 
-# Debug: Check installed packages
-st.write("Installed packages:")
-subprocess.run(["dpkg", "-l"])
 
-# Debug: Check Chromium and ChromeDriver versions
-st.write("Chromium version:")
-subprocess.run(["chromium-browser", "--version"])
-
-st.write("ChromeDriver version:")
-subprocess.run(["chromedriver", "--version"])
 # Helper Functions
 def initialize_driver(download_dir):
     options = Options()
@@ -167,4 +158,14 @@ def main():
                         driver.quit()
 
 if __name__ == "__main__":
+        # Debug: Check installed packages
+    st.write("Installed packages:")
+    subprocess.run(["dpkg", "-l"])
+    
+    # Debug: Check Chromium and ChromeDriver versions
+    st.write("Chromium version:")
+    subprocess.run(["chromium-browser", "--version"])
+    
+    st.write("ChromeDriver version:")
+    subprocess.run(["chromedriver", "--version"])
     main()
