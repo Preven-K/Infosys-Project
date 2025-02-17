@@ -11,7 +11,32 @@ import time
 import datetime
 import zipfile
 import shutil
+import subprocess
 
+# Add this at the start of your app
+st.write("Checking Chromium and ChromeDriver installation...")
+
+# Check Chromium version
+try:
+    chromium_version = subprocess.run(
+        ["chromium-browser", "--version"],
+        capture_output=True,
+        text=True
+    ).stdout
+    st.write(f"Chromium version: {chromium_version}")
+except Exception as e:
+    st.error(f"Error checking Chromium version: {e}")
+
+# Check ChromeDriver version
+try:
+    chromedriver_version = subprocess.run(
+        ["chromedriver", "--version"],
+        capture_output=True,
+        text=True
+    ).stdout
+    st.write(f"ChromeDriver version: {chromedriver_version}")
+except Exception as e:
+    st.error(f"Error checking ChromeDriver version: {e}")
 # Helper Functions
 def initialize_driver(download_dir):
     options = Options()
