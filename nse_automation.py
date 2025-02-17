@@ -11,8 +11,6 @@ import time
 import datetime
 import zipfile
 import shutil
-import hashlib
-
 
 ##################################################################################################
 # Helper Functions
@@ -25,8 +23,10 @@ def initialize_driver(download_dir):
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
+    options.add_argument("--headless")  # Run browser in headless mode
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
 
 def organize_files_by_type(file_path, base_folder, log_file):
     if os.path.isfile(file_path):
@@ -37,39 +37,15 @@ def organize_files_by_type(file_path, base_folder, log_file):
             os.makedirs(file_type_folder)
 
         destination_path = os.path.join(file_type_folder, os.path.basename(file_path))
-
-        if os.path.exists(destination_path):
-            # Check for duplicates
-            if not is_duplicate(file_path, destination_path):
-                shutil.move(file_path, destination_path)
-                log_message = f"✅ Added {os.path.basename(file_path)} to {file_type_folder}\n"
-            else:
-                os.remove(file_path)
-                log_message = f"❌ Removed duplicate file: {os.path.basename(file_path)}\n"
-        else:
-            shutil.move(file_path, destination_path)
-            log_message = f"✅ Added {os.path.basename(file_path)} to {file_type_folder}\n"
-
+        shutil.move(file_path, destination_path)
+        log_message = f"✅ Added {os.path.basename(file_path)} to {file_type_folder}\n"
         log_file.write(log_message)
         st.write(log_message)
-
-
-def is_duplicate(file1, file2):
-    return hash_file(file1) == hash_file(file2)
-
-
-def hash_file(file_path):
-    hasher = hashlib.md5()
-    with open(file_path, 'rb') as f:
-        buf = f.read()
-        hasher.update(buf)
-    return hasher.hexdigest()
-
 
 ##################################################################################################
 # Main Application
 def main():
-    st.title("NSE Automation Tool")
+    st.title("NSE BOT")
     st.write("Automate file downloads, organization, and log generation for NSE reports.")
 
     # User Input Section
@@ -85,7 +61,7 @@ def main():
             st.success("Login successful. Starting automation process...")
 
             # Set up directories
-            download_dir = "C:\\Users\\kprev\\Downloads\\NSE"
+            download_dir = "/tmp/nse_downloads"  # Use a temporary directory
             current_date = datetime.datetime.now().strftime("%d.%m.%Y")
             date_folder_path = os.path.join(download_dir, current_date)
 
@@ -163,8 +139,8 @@ def main():
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
                 finally:
-                    driver.quit()
-
+                    if 'driver' in locals():  # Check if driver was initialized
+                        driver.quit()
 
 if __name__ == "__main__":
     main()
