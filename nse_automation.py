@@ -25,6 +25,12 @@ def initialize_driver(download_dir):
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
+    
+    # Add options for headless mode and Linux environment compatibility
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
+    options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
+
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 
@@ -94,7 +100,6 @@ def main():
 
             log_file_path = os.path.join(date_folder_path, f"{current_date}.log")
             with open(log_file_path, "w", encoding="utf-8") as log_file:
-                driver = None
                 try:
                     # Initialize WebDriver
                     driver = initialize_driver(download_dir)
@@ -164,9 +169,7 @@ def main():
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
                 finally:
-                    # Ensure the driver quits even in case of an error
-                    if driver:
-                        driver.quit()
+                    driver.quit()
 
 
 if __name__ == "__main__":
