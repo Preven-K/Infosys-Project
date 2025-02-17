@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 import os
 import time
 import datetime
@@ -23,17 +24,17 @@ def initialize_driver(download_dir):
     }
     options.add_experimental_option("prefs", prefs)
 
-    # Add headless and compatibility options for cloud
+    # Configure for headless operation and cloud compatibility
     options.add_argument("--headless")  # Run in headless mode
     options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
     options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
-    options.binary_location = "/usr/bin/chromium-browser"  # Use Chromium instead of Chrome (for Linux)
-
-    # Specify the path to chromedriver manually (Make sure the path exists in your environment)
-    chromedriver_path = "/usr/local/bin/chromedriver"  # You may need to adjust this path to where your driver is stored
     
-    # Start Chrome with the webdriver
-    return webdriver.Chrome(service=Service(chromedriver_path), options=options)
+    # Ensure chromium binary is used in cloud
+    options.binary_location = "/usr/bin/chromium-browser"  # Update the location based on the container path
+    
+    # Automatically download and configure the correct chromedriver for the environment
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    return driver
 
 # Main Application
 def main():
