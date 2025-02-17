@@ -5,7 +5,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 import os
 import time
 import datetime
@@ -23,15 +22,18 @@ def initialize_driver(download_dir):
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
-    
+
     # Add headless and compatibility options for cloud
     options.add_argument("--headless")  # Run in headless mode
     options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
     options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
     options.binary_location = "/usr/bin/chromium-browser"  # Use Chromium instead of Chrome (for Linux)
 
-    # Start Chrome with webdriver-manager (It should use chromedriver for the available chromium)
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Specify the path to chromedriver manually (Make sure the path exists in your environment)
+    chromedriver_path = "/usr/local/bin/chromedriver"  # You may need to adjust this path to where your driver is stored
+    
+    # Start Chrome with the webdriver
+    return webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
 # Main Application
 def main():
