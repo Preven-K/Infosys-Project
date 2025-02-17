@@ -28,8 +28,9 @@ def initialize_driver(download_dir):
     options.add_argument("--headless")  # Run in headless mode
     options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
     options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
-    options.binary_location = "/usr/bin/chromium-browser"  # Use Chromium instead of Chrome
+    options.binary_location = "/usr/bin/chromium-browser"  # Use Chromium instead of Chrome (for Linux)
 
+    # Start Chrome with webdriver-manager (It should use chromedriver for the available chromium)
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 # Main Application
