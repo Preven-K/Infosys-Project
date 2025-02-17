@@ -1,16 +1,18 @@
 FROM python:3.9-slim
 
-# Install system dependencies + Chromium + ChromeDriver
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     curl \
     unzip \
+    # Install Chromium
     chromium \
+    # Install ChromeDriver
     chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
-# Explicitly set Chromium and ChromeDriver paths
+# Set environment variables for Chromium and ChromeDriver
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROME_DRIVER=/usr/bin/chromedriver
 
