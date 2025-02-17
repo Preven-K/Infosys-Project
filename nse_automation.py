@@ -19,7 +19,7 @@ st.write("Checking Chromium and ChromeDriver installation...")
 # Check Chromium version
 try:
     chromium_version = subprocess.run(
-        ["chromium-browser", "--version"],
+        ["chromium", "--version"],  # Use "chromium" instead of "chromium-browser"
         capture_output=True,
         text=True
     ).stdout
@@ -37,6 +37,7 @@ try:
     st.write(f"ChromeDriver version: {chromedriver_version}")
 except Exception as e:
     st.error(f"Error checking ChromeDriver version: {e}")
+    
 # Helper Functions
 def initialize_driver(download_dir):
     options = Options()
