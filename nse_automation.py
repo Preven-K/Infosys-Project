@@ -56,7 +56,7 @@ def initialize_driver(download_dir):
     options.add_argument("--disable-dev-shm-usage")
 
     # Use pre-installed Chromium and ChromeDriver
-    options.binary_location = "/usr/bin/chromium"
+    options.binary_location = "/usr/bin/chromium"  # Path to Chromium
 
     # Point directly to the system ChromeDriver
     driver = webdriver.Chrome(
