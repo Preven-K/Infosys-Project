@@ -28,7 +28,7 @@ def initialize_driver(download_dir):
     options.add_argument("--headless")  # Run in headless mode
     options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
     options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
-    
+
     # Ensure chromium binary is used in cloud
     options.binary_location = "/usr/bin/chromium-browser"  # Update the location based on the container path
     
