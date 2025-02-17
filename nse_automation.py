@@ -6,13 +6,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-import os
 import time
 import datetime
 import zipfile
 import shutil
 import subprocess
+import os
 
+st.write("Checking Chromium path...")
+st.write(os.path.exists("/usr/bin/chromium"))  # Should return True
+
+st.write("Checking ChromeDriver path...")
+st.write(os.path.exists("/usr/bin/chromedriver"))  # Should return True
 # Add this at the start of your app
 st.write("Checking Chromium and ChromeDriver installation...")
 
