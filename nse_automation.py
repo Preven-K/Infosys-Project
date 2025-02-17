@@ -29,11 +29,11 @@ def initialize_driver(download_dir):
     options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
     options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
 
-    # Ensure chromium binary is used in cloud
-    options.binary_location = "/usr/bin/chromium-browser"  # Update the location based on the container path
-    
-    # Automatically download and configure the correct chromedriver for the environment
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Ensure Chromium binary is used
+    options.binary_location = "/usr/bin/chromium-browser"  # Path to Chromium
+
+    # Use a pre-installed ChromeDriver
+    driver = webdriver.Chrome(service=Service("/usr/bin/chromedriver"), options=options)
     return driver
 
 def organize_files_by_type(file_path, destination_folder, log_file):
