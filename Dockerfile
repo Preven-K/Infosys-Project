@@ -1,25 +1,31 @@
 FROM python:3.9-slim
 
-# Install system dependencies
+# Install system dependencies + Chromium + ChromeDriver
 RUN apt-get update && apt-get install -y \
     wget \
-    unzip \
-    curl \
     gnupg \
+    curl \
+    unzip \
     chromium \
     chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up Chromium and ChromeDriver
-ENV CHROMIUM_PATH=/usr/bin/chromium
-ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
+# Explicitly set Chromium and ChromeDriver paths
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROME_DRIVER=/usr/bin/chromedriver
+
+# Ensure ChromeDriver is executable
+RUN chmod +x /usr/bin/chromedriver
+
+# Set working directory
+WORKDIR /app
 
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+# Copy app files
 COPY . .
 
-# Run the Streamlit app
+# Run the app
 CMD ["streamlit", "run", "app.py"]
