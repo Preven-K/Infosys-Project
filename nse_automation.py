@@ -71,11 +71,12 @@ def main():
     st.title("NSE Automation Tool")
     st.write("Automate file downloads, organization, and log generation for NSE reports.")
 
-    # Set up directories
+    # Set up directories under the Streamlit allowed directory (/mnt/data)
     download_dir = "/mnt/data"  # Use Streamlit's allowed directory
     current_date = datetime.datetime.now().strftime("%d.%m.%Y")
     date_folder_path = os.path.join(download_dir, current_date)
 
+    # Ensure the folder structure is created under the allowed directory
     if not os.path.exists(date_folder_path):
         os.makedirs(date_folder_path)
 
