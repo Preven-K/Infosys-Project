@@ -11,9 +11,6 @@ import time
 import datetime
 import zipfile
 import shutil
-import hashlib
-import subprocess
-
 
 # Helper Functions
 def initialize_driver(download_dir):
@@ -34,8 +31,8 @@ def initialize_driver(download_dir):
     # Ensure Chromium binary is used
     options.binary_location = "/usr/bin/chromium-browser"  # Path to Chromium
 
-    # Use a pre-installed ChromeDriver
-    driver = webdriver.Chrome(service=Service("/usr/bin/chromedriver"), options=options)
+    # Use webdriver_manager to install ChromeDriver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return driver
 
 def organize_files_by_type(file_path, destination_folder, log_file):
@@ -158,14 +155,4 @@ def main():
                         driver.quit()
 
 if __name__ == "__main__":
-        # Debug: Check installed packages
-    st.write("Installed packages:")
-    subprocess.run(["dpkg", "-l"])
-    
-    # Debug: Check Chromium and ChromeDriver versions
-    st.write("Chromium version:")
-    subprocess.run(["chromium-browser", "--version"])
-    
-    st.write("ChromeDriver version:")
-    subprocess.run(["chromedriver", "--version"])
     main()
