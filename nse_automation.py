@@ -28,7 +28,8 @@ def initialize_driver(download_dir):
 
     # Set the correct paths dynamically
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    chromedriver_path = os.path.join(current_dir, "chromedriver.exe")
+    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
+
 
     # Ensure Chromium binary is used for compatibility
     if os.path.exists("/usr/bin/chromium-browser"):
