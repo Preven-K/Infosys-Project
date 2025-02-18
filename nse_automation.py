@@ -5,13 +5,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 import os
 import time
 import datetime
 import zipfile
-import shutil
-import hashlib
 
 # Helper Functions
 def initialize_driver(download_dir):
@@ -29,13 +26,25 @@ def initialize_driver(download_dir):
     options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
     options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
 
-    # Ensure chromium binary is used in cloud
-    options.binary_location = "/usr/bin/chromium-browser"  # Update the location based on the container path
-    
-    # Automatically download and configure the correct chromedriver for the environment
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Set the correct paths dynamically
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    chromedriver_path = os.path.join(current_dir, "chromedriver.exe")
 
+    # Ensure Chromium binary is used for compatibility
+    if os.path.exists("/usr/bin/chromium-browser"):
+        options.binary_location = "/usr/bin/chromium-browser"
+
+    # Initialize the WebDriver
+    driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
     return driver
+
+# Organize files based on type (Stub function for demonstration)
+def organize_files_by_type(file_path, destination_folder, log_file):
+    file_name = os.path.basename(file_path)
+    destination_path = os.path.join(destination_folder, file_name)
+    os.rename(file_path, destination_path)
+    log_message = f"✅ Organized file: {file_name}\n"
+    log_file.write(log_message)
 
 # Main Application
 def main():
@@ -55,7 +64,8 @@ def main():
             st.success("Login successful. Starting automation process...")
 
             # Set up directories
-            download_dir = "C:\\Users\\kprev\\Downloads\\NSE"
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            download_dir = os.path.join(current_dir, "downloads")
             current_date = datetime.datetime.now().strftime("%d.%m.%Y")
             date_folder_path = os.path.join(download_dir, current_date)
 
@@ -138,7 +148,6 @@ def main():
                     # Ensure driver.quit() is only called if driver is initialized
                     if driver:
                         driver.quit()
-
 
 if __name__ == "__main__":
     main()
