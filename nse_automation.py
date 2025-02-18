@@ -9,11 +9,14 @@ import os
 import time
 import datetime
 import zipfile
+import shutil
 
 # Helper Functions
 def initialize_driver(download_dir):
-    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')  # Adjust path if necessary
+    # Path to chromedriver in the same directory
+    chromedriver_path = os.path.join(os.path.dirname(__file__), "chromedriver.exe")
 
+    # Configure download options
     options = Options()
     prefs = {
         "download.default_directory": download_dir,
@@ -22,22 +25,39 @@ def initialize_driver(download_dir):
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
+    options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
 
-    # Explicitly set chromedriver executable
+    # Initialize WebDriver
     driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
     return driver
 
+def organize_files_by_type(file_path, base_folder, log_file):
+    """Organizes files by their extension into respective folders."""
+    if os.path.isfile(file_path):
+        file_extension = os.path.splitext(file_path)[1].lower().lstrip(".")
+        file_type_folder = os.path.join(base_folder, file_extension.upper())
 
-# Organize files based on type (Stub function for demonstration)
-def organize_files_by_type(file_path, destination_folder, log_file):
-    file_name = os.path.basename(file_path)
-    destination_path = os.path.join(destination_folder, file_name)
-    os.rename(file_path, destination_path)
-    log_message = f"✅ Organized file: {file_name}\n"
-    log_file.write(log_message)
+        if not os.path.exists(file_type_folder):
+            os.makedirs(file_type_folder)
+
+        shutil.move(file_path, os.path.join(file_type_folder, os.path.basename(file_path)))
+        log_file.write(f"✅ Added {os.path.basename(file_path)} to {file_type_folder}\n")
+
+def remove_duplicates(folder_path, log_file):
+    """Removes duplicate files based on their hash."""
+    seen_hashes = {}
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_hash = hashlib.md5(open(file_path, 'rb').read()).hexdigest()
+
+            if file_hash in seen_hashes:
+                os.remove(file_path)
+                log_file.write(f"❌ Removed duplicate file {file}\n")
+            else:
+                seen_hashes[file_hash] = file_path
 
 # Main Application
 def main():
@@ -57,8 +77,7 @@ def main():
             st.success("Login successful. Starting automation process...")
 
             # Set up directories
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            download_dir = os.path.join(current_dir, "downloads")
+            download_dir = os.path.join(os.getcwd(), "downloads")
             current_date = datetime.datetime.now().strftime("%d.%m.%Y")
             date_folder_path = os.path.join(download_dir, current_date)
 
@@ -106,13 +125,11 @@ def main():
 
                             try:
                                 os.rename(zip_file_path, renamed_zip_path)
-                                log_message = f"✅ Renamed '{file}' to '{new_file_name}'\n"
-                                log_file.write(log_message)
-                                st.write(log_message)
+                                log_file.write(f"✅ Renamed '{file}' to '{new_file_name}'\n")
+                                st.write(f"✅ Renamed '{file}' to '{new_file_name}'")
                             except Exception as e:
-                                log_message = f"❌ Error renaming '{file}': {e}\n"
-                                log_file.write(log_message)
-                                st.write(log_message)
+                                log_file.write(f"❌ Error renaming '{file}': {e}\n")
+                                st.write(f"❌ Error renaming '{file}': {e}")
 
                             # Extract and organize files
                             extract_folder = os.path.join(date_folder_path, "Extracted")
@@ -131,16 +148,17 @@ def main():
                             os.remove(renamed_zip_path)
                             st.write(f"🗑️ Deleted original ZIP file: {renamed_zip_path}")
 
-                        st.write("File processing complete.")
+                        remove_duplicates(date_folder_path, log_file)
+                        st.write("File processing complete. Duplicate files removed.")
                     else:
                         st.error("No ZIP files found in the download directory.")
 
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
                 finally:
-                    # Ensure driver.quit() is only called if driver is initialized
                     if driver:
                         driver.quit()
+
 
 if __name__ == "__main__":
     main()
