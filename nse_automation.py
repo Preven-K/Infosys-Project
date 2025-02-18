@@ -5,160 +5,141 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 import os
 import time
 import datetime
 import zipfile
 import shutil
+import hashlib
 
-# Helper Functions
-def initialize_driver(download_dir):
-    # Path to chromedriver in the same directory
-    chromedriver_path = os.path.join(os.path.dirname(__file__), "chromedriver.exe")
+# Global variables
+download_dir = "C:\\Users\\kprev\\Downloads\\NSE"
 
-    # Configure download options
-    options = Options()
-    prefs = {
-        "download.default_directory": download_dir,
-        "profile.default_content_settings.popups": 0,
-        "download.prompt_for_download": False,
-        "safebrowsing.enabled": True
-    }
-    options.add_experimental_option("prefs", prefs)
-    options.add_argument("--headless")  # Run in headless mode
-    options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
-    options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
+# Streamlit UI
+st.title("NSE Report Downloader and Organizer")
+st.sidebar.header("Settings")
+download_dir = st.sidebar.text_input("Download Directory", value=download_dir)
+retry_limit = st.sidebar.number_input("Retry Limit", min_value=1, max_value=10, value=3, step=1)
 
-    # Initialize WebDriver
-    driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
-    return driver
+st.sidebar.subheader("Run the Script")
+if st.sidebar.button("Start Download Process"):
+    with st.spinner("Initializing the download process..."):
+        # Initialize Selenium WebDriver
+        options = Options()
+        prefs = {
+            "download.default_directory": download_dir,
+            "profile.default_content_settings.popups": 0,
+            "download.prompt_for_download": False,
+            "safebrowsing.enabled": True
+        }
+        options.add_experimental_option("prefs", prefs)
 
-def organize_files_by_type(file_path, base_folder, log_file):
-    """Organizes files by their extension into respective folders."""
-    if os.path.isfile(file_path):
-        file_extension = os.path.splitext(file_path)[1].lower().lstrip(".")
-        file_type_folder = os.path.join(base_folder, file_extension.upper())
+        def initialize_driver():
+            return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-        if not os.path.exists(file_type_folder):
-            os.makedirs(file_type_folder)
+        def retry_download():
+            nonlocal retry_count
+            retry_count += 1
+            if retry_count > retry_limit:
+                st.error("Retry limit reached. Exiting.")
+                return False
+            st.warning(f"Retrying... Attempt {retry_count}/{retry_limit}")
+            time.sleep(5)
+            main()
 
-        shutil.move(file_path, os.path.join(file_type_folder, os.path.basename(file_path)))
-        log_file.write(f"✅ Added {os.path.basename(file_path)} to {file_type_folder}\n")
+        def organize_files_by_type(file_path, base_folder, log_file):
+            if os.path.isfile(file_path):
+                file_extension = os.path.splitext(file_path)[1].lower().lstrip(".")
+                file_type_folder = os.path.join(base_folder, file_extension.upper())
 
-def remove_duplicates(folder_path, log_file):
-    """Removes duplicate files based on their hash."""
-    seen_hashes = {}
-    for root, _, files in os.walk(folder_path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            file_hash = hashlib.md5(open(file_path, 'rb').read()).hexdigest()
+                if not os.path.exists(file_type_folder):
+                    os.makedirs(file_type_folder)
 
-            if file_hash in seen_hashes:
-                os.remove(file_path)
-                log_file.write(f"❌ Removed duplicate file {file}\n")
-            else:
-                seen_hashes[file_hash] = file_path
+                destination_path = os.path.join(file_type_folder, os.path.basename(file_path))
+                shutil.move(file_path, destination_path)
+                log_file.write(f"✅ Added {os.path.basename(file_path)} to {file_type_folder}\n")
+                st.success(f"Added {os.path.basename(file_path)} to {file_type_folder}")
 
-# Main Application
-def main():
-    st.title("NSE Automation Tool")
-    st.write("Automate file downloads, organization, and log generation for NSE reports.")
+        def remove_duplicate_files(folder_path, log_file):
+            file_hashes = {}
+            for root, dirs, files in os.walk(folder_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    file_hash = hashlib.md5(open(file_path, 'rb').read()).hexdigest()
 
-    # User Input Section
-    st.subheader("Login Details")
-    username = st.text_input("Enter Username:")
-    password = st.text_input("Enter Password:", type="password")
-    start_process = st.button("Start Automation")
+                    if file_hash in file_hashes:
+                        os.remove(file_path)
+                        log_file.write(f"❌ Removed duplicate file: {file_path}\n")
+                        st.warning(f"Removed duplicate file: {file_path}")
+                    else:
+                        file_hashes[file_hash] = file_path
 
-    if start_process:
-        if not username or not password:
-            st.error("Please enter valid login details.")
-        else:
-            st.success("Login successful. Starting automation process...")
+        def main():
+            nonlocal retry_count
+            retry_count = 0
 
-            # Set up directories
-            download_dir = os.path.join(os.getcwd(), "downloads")
-            current_date = datetime.datetime.now().strftime("%d.%m.%Y")
-            date_folder_path = os.path.join(download_dir, current_date)
+            driver = initialize_driver()
+            try:
+                driver.get("https://www.nseindia.com/all-reports")
 
-            if not os.path.exists(date_folder_path):
-                os.makedirs(date_folder_path)
+                # Wait for the page to load
+                wait = WebDriverWait(driver, 30)
+                wait.until(EC.presence_of_element_located((By.XPATH, "//span[@class='checkmark']")))
+                st.success("Records loaded successfully!")
 
-            log_file_path = os.path.join(date_folder_path, f"{current_date}.log")
-            with open(log_file_path, "w", encoding="utf-8") as log_file:
-                driver = None  # Initialize driver to handle exceptions properly
+                # Scroll to the bottom to ensure all elements are loaded
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(5)
 
-                try:
-                    # Initialize WebDriver
-                    driver = initialize_driver(download_dir)
-                    driver.get("https://www.nseindia.com/all-reports")
+                # Select the checkbox for all files
+                checkbox = wait.until(
+                    EC.element_to_be_clickable((By.XPATH, "//span[@class='checkmark']"))
+                )
+                driver.execute_script("arguments[0].click();", checkbox)
+                st.success("All files selected successfully.")
 
-                    # Wait for the page to load
-                    wait = WebDriverWait(driver, 30)
-                    wait.until(EC.presence_of_element_located((By.XPATH, "//span[@class='checkmark']")))
-                    st.write("Records loaded successfully.")
+                # Wait for and click the "Download" button
+                download_button = wait.until(
+                    EC.element_to_be_clickable((By.XPATH, "//i[contains(@class, 'fa fa-download')]"))
+                )
+                driver.execute_script("arguments[0].click();", download_button)
+                st.success("Download button clicked successfully.")
 
-                    # Scroll to the bottom
-                    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                    time.sleep(5)
+                # Wait for file download to complete
+                time.sleep(10)
 
-                    # Select checkboxes
-                    checkbox = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[@class='checkmark']")))
-                    driver.execute_script("arguments[0].click();", checkbox)
-                    st.write("All files selected successfully.")
+                # Renaming and processing ZIP files
+                downloaded_files = [f for f in os.listdir(download_dir) if f.endswith(".zip")]
+                if downloaded_files:
+                    current_date = datetime.datetime.now().strftime("%d.%m.%Y")
+                    date_folder_path = os.path.join(download_dir, current_date)
+                    os.makedirs(date_folder_path, exist_ok=True)
 
-                    # Click download button
-                    download_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//i[contains(@class, 'fa fa-download')]")))
-                    driver.execute_script("arguments[0].click();", download_button)
-                    st.write("Download button clicked successfully.")
-                    time.sleep(10)
-
-                    # Process files
-                    downloaded_files = [f for f in os.listdir(download_dir) if f.endswith(".zip")]
-                    if downloaded_files:
-                        st.write(f"Downloaded ZIP files: {downloaded_files}")
-
+                    log_file_path = os.path.join(date_folder_path, f"{current_date}.log")
+                    with open(log_file_path, "w", encoding="utf-8") as log_file:
                         for file in downloaded_files:
                             zip_file_path = os.path.join(download_dir, file)
-                            new_file_name = f"Downloads_{current_date}.zip"
-                            renamed_zip_path = os.path.join(download_dir, new_file_name)
+                            renamed_zip_path = os.path.join(download_dir, f"Downloads_{current_date}.zip")
+                            os.rename(zip_file_path, renamed_zip_path)
 
-                            try:
-                                os.rename(zip_file_path, renamed_zip_path)
-                                log_file.write(f"✅ Renamed '{file}' to '{new_file_name}'\n")
-                                st.write(f"✅ Renamed '{file}' to '{new_file_name}'")
-                            except Exception as e:
-                                log_file.write(f"❌ Error renaming '{file}': {e}\n")
-                                st.write(f"❌ Error renaming '{file}': {e}")
-
-                            # Extract and organize files
                             extract_folder = os.path.join(date_folder_path, "Extracted")
-                            if not os.path.exists(extract_folder):
-                                os.makedirs(extract_folder)
+                            os.makedirs(extract_folder, exist_ok=True)
 
                             with zipfile.ZipFile(renamed_zip_path, 'r') as zip_ref:
                                 zip_ref.extractall(extract_folder)
-                                st.write(f"✅ Extracted {new_file_name} to {extract_folder}")
 
-                            for extracted_file in os.listdir(extract_folder):
-                                extracted_file_path = os.path.join(extract_folder, extracted_file)
-                                if os.path.isfile(extracted_file_path):
-                                    organize_files_by_type(extracted_file_path, date_folder_path, log_file)
+                            remove_duplicate_files(date_folder_path, log_file)
 
-                            os.remove(renamed_zip_path)
-                            st.write(f"🗑️ Deleted original ZIP file: {renamed_zip_path}")
+                else:
+                    st.warning("No ZIP files found. Retrying...")
+                    retry_download()
 
-                        remove_duplicates(date_folder_path, log_file)
-                        st.write("File processing complete. Duplicate files removed.")
-                    else:
-                        st.error("No ZIP files found in the download directory.")
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+                retry_download()
 
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
-                finally:
-                    if driver:
-                        driver.quit()
+            finally:
+                driver.quit()
 
-
-if __name__ == "__main__":
-    main()
+        main()
