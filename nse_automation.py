@@ -37,7 +37,7 @@ if st.sidebar.button("Start Download Process"):
 
         def initialize_driver():
             return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
+        retry_count = 0
         def retry_download():
             nonlocal retry_count
             retry_count += 1
@@ -76,9 +76,6 @@ if st.sidebar.button("Start Download Process"):
                         file_hashes[file_hash] = file_path
 
         def main():
-            nonlocal retry_count
-            retry_count = 0
-
             driver = initialize_driver()
             try:
                 driver.get("https://www.nseindia.com/all-reports")
