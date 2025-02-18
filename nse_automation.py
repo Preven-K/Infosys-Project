@@ -33,7 +33,7 @@ def initialize_driver(download_dir):
     options.binary_location = "/usr/bin/chromium-browser"  # Update the location based on the container path
     
     # Automatically download and configure the correct chromedriver for the environment
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager(version="133.0.6943.99").install()), options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     return driver
 
