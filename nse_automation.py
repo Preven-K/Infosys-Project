@@ -12,6 +12,8 @@ import zipfile
 
 # Helper Functions
 def initialize_driver(download_dir):
+    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')  # Adjust path if necessary
+
     options = Options()
     prefs = {
         "download.default_directory": download_dir,
@@ -20,25 +22,14 @@ def initialize_driver(download_dir):
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
-    # Configure for headless operation and cloud compatibility
-    options.add_argument("--headless")  # Run in headless mode
-    options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
-    options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
-
-    # Set the correct paths dynamically
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
-
-
-    # Ensure Chromium binary is used for compatibility
-    if os.path.exists("/usr/bin/chromium-browser"):
-        options.binary_location = "/usr/bin/chromium-browser"
-
-    # Initialize the WebDriver
+    # Explicitly set chromedriver executable
     driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
-
     return driver
+
 
 # Organize files based on type (Stub function for demonstration)
 def organize_files_by_type(file_path, destination_folder, log_file):
