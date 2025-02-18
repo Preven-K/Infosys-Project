@@ -6,86 +6,35 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+import os
 import time
 import datetime
 import zipfile
 import shutil
-import subprocess
-import os
+import hashlib
 
-st.write("Checking Chromium path...")
-st.write(os.path.exists("/usr/bin/chromium"))  # Should return True
-
-st.write("Checking ChromeDriver path...")
-st.write(os.path.exists("/usr/bin/chromedriver"))  # Should return True
-# Add this at the start of your app
-st.write("Checking Chromium and ChromeDriver installation...")
-
-# Check Chromium version
-try:
-    chromium_version = subprocess.run(
-        ["chromium", "--version"],  # Use "chromium" instead of "chromium-browser"
-        capture_output=True,
-        text=True
-    ).stdout
-    st.write(f"Chromium version: {chromium_version}")
-except Exception as e:
-    st.error(f"Error checking Chromium version: {e}")
-
-# Check ChromeDriver version
-try:
-    chromedriver_version = subprocess.run(
-        ["chromedriver", "--version"],
-        capture_output=True,
-        text=True
-    ).stdout
-    st.write(f"ChromeDriver version: {chromedriver_version}")
-except Exception as e:
-    st.error(f"Error checking ChromeDriver version: {e}")
-    
 # Helper Functions
 def initialize_driver(download_dir):
     options = Options()
     prefs = {
         "download.default_directory": download_dir,
-        "download.prompt_for_download": False,
-        "download.default_directory": download_dir,
         "profile.default_content_settings.popups": 0,
+        "download.prompt_for_download": False,
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
 
-    # Headless configuration
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    # Configure for headless operation and cloud compatibility
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--no-sandbox")  # Disable sandbox for Linux environments
+    options.add_argument("--disable-dev-shm-usage")  # Prevent resource issues in containers
 
-    # Use pre-installed Chromium and ChromeDriver
-    options.binary_location = "/usr/bin/chromium"  # Path to Chromium
-
-    # Point directly to the system ChromeDriver
-    driver = webdriver.Chrome(
-        service=Service(executable_path="/usr/bin/chromedriver"),
-        options=options
-    )
+    # Ensure chromium binary is used in cloud
+    options.binary_location = "/usr/bin/chromium-browser"  # Update the location based on the container path
+    
+    # Automatically download and configure the correct chromedriver for the environment
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return driver
-
-def organize_files_by_type(file_path, destination_folder, log_file):
-    file_name = os.path.basename(file_path)
-    file_extension = os.path.splitext(file_name)[1][1:]  # Get the file extension without the dot
-
-    # Create a subfolder based on the file extension
-    subfolder_path = os.path.join(destination_folder, file_extension)
-    if not os.path.exists(subfolder_path):
-        os.makedirs(subfolder_path)
-
-    # Move the file to the appropriate subfolder
-    new_file_path = os.path.join(subfolder_path, file_name)
-    shutil.move(file_path, new_file_path)
-
-    log_message = f"✅ Moved '{file_name}' to '{subfolder_path}'\n"
-    log_file.write(log_message)
-    st.write(log_message)
 
 # Main Application
 def main():
@@ -105,7 +54,7 @@ def main():
             st.success("Login successful. Starting automation process...")
 
             # Set up directories
-            download_dir = os.path.join(os.getcwd(), "NSE_Downloads")
+            download_dir = "C:\\Users\\kprev\\Downloads\\NSE"
             current_date = datetime.datetime.now().strftime("%d.%m.%Y")
             date_folder_path = os.path.join(download_dir, current_date)
 
@@ -188,6 +137,7 @@ def main():
                     # Ensure driver.quit() is only called if driver is initialized
                     if driver:
                         driver.quit()
+
 
 if __name__ == "__main__":
     main()
