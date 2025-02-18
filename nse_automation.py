@@ -36,7 +36,7 @@ if st.sidebar.button("Start Download Process"):
         options.add_experimental_option("prefs", prefs)
 
         def initialize_driver():
-            return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+            return webdriver.Chrome(service=Service(ChromeDriverManager(version="114.0.5735.90").install()), options=options)
         retry_count = 0
         def retry_download():
             retry_count += 1
