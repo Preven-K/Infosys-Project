@@ -39,7 +39,6 @@ if st.sidebar.button("Start Download Process"):
             return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         retry_count = 0
         def retry_download():
-            nonlocal retry_count
             retry_count += 1
             if retry_count > retry_limit:
                 st.error("Retry limit reached. Exiting.")
