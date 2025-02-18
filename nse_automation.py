@@ -37,6 +37,7 @@ def initialize_driver(download_dir):
 
     # Initialize the WebDriver
     driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
+
     return driver
 
 # Organize files based on type (Stub function for demonstration)
