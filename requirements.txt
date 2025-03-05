@@ -5,5 +5,4 @@ matplot
 pandas
 schedule
 pyodbc
-stmplib
 seaborn
