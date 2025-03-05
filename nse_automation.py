@@ -37,7 +37,7 @@ def get_db_connection():
         'Trusted_Connection=yes;'
     )
     return conn
-
+########################################################################################################################
 # Helper functions
 def get_user_email(username):
     conn = get_db_connection()
@@ -46,14 +46,14 @@ def get_user_email(username):
     email = cursor.fetchone()[0]
     conn.close()
     return email
-
+########################################################################################################################
 def log_message(message, log_file_path):
     global log_data
     log_data.append(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {message}")
     print(message)
     with open(log_file_path, "a", encoding="utf-8") as log_file:
         log_file.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
-
+########################################################################################################################
 def send_email_notification(to_email, subject, body, log_file_path, file_count=None, log_records=None, download_path=None, success=True):
     from_email = "prevenk.g3integeratedvlsi@gmail.com"
     from_password = "docg xsbg ujjt trwy"  # Use the app password generated from your Google account
@@ -88,7 +88,7 @@ def send_email_notification(to_email, subject, body, log_file_path, file_count=N
     except Exception as e:
         log_message(f"Failed to send email to {to_email}: {e}", log_file_path)
         print(f"Failed to send email to {to_email}: {e}")
-
+########################################################################################################################
 def find_and_process_zip(log_file_path):
     zip_filename = "Reports-Daily-Multiple.zip"
     zip_path = os.path.join(DEFAULT_DOWNLOAD_FOLDER, zip_filename)
@@ -108,7 +108,7 @@ def find_and_process_zip(log_file_path):
     segregate_files(base_folder, log_file_path)
     validate_files(base_folder, log_file_path)
     return True
-
+########################################################################################################################
 def extract_zip(zip_path, extract_to, log_file_path):
     try:
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -117,7 +117,7 @@ def extract_zip(zip_path, extract_to, log_file_path):
         log_message(f"📍 Extracted {zip_path} to {extract_to}", log_file_path)
     except Exception as e:
         log_message(f"⚠️ Error extracting {zip_path}: {e}", log_file_path)
-
+########################################################################################################################
 def process_nested_zips(base_folder, log_file_path):
     for root, dirs, files in os.walk(base_folder):
         for file in files:
@@ -125,7 +125,7 @@ def process_nested_zips(base_folder, log_file_path):
             if file_path.endswith(".zip"):
                 extract_zip(file_path, base_folder, log_file_path)
                 process_nested_zips(base_folder, log_file_path)
-
+########################################################################################################################
 def check_and_remove_duplicates(base_folder, log_file_path):
     seen_files = set()
     for root, dirs, files in os.walk(base_folder):
@@ -136,7 +136,7 @@ def check_and_remove_duplicates(base_folder, log_file_path):
                 log_message(f"🗑️ Duplicate removed: {file}", log_file_path)
             else:
                 seen_files.add(file)
-
+########################################################################################################################
 def segregate_files(base_folder, log_file_path):
     ext_folders = {}
     for root, dirs, files in os.walk(base_folder):
@@ -156,7 +156,7 @@ def segregate_files(base_folder, log_file_path):
                         log_message(f"📍 Moved: {file} -> {target_path}", log_file_path)
                     except Exception as e:
                         log_message(f"❌ Error moving {file}: {e}", log_file_path)
-
+########################################################################################################################
 def validate_files(base_folder, log_file_path):
     for root, dirs, files in os.walk(base_folder):
         for file in files:
@@ -169,7 +169,7 @@ def validate_files(base_folder, log_file_path):
                     log_message(f"❌ File {file} not moved to {ext_folder}", log_file_path)
                 else:
                     log_message(f"✅ ✨File {file} correctly moved to {ext_folder}", log_file_path)
-
+########################################################################################################################
 def download_nse_reports(email=None):
     options = webdriver.ChromeOptions()
     options.add_argument("--disable-gpu")
@@ -244,7 +244,7 @@ def download_nse_reports(email=None):
             success=False
         )
     return False
-
+########################################################################################################################
 def get_extension_summary(base_folder):
     ext_count = {}
     for root, dirs, files in os.walk(base_folder):
@@ -252,7 +252,7 @@ def get_extension_summary(base_folder):
             ext = os.path.splitext(file)[1]
             ext_count[ext] = ext_count.get(ext, 0) + 1
     return ext_count
-
+########################################################################################################################
 def find_latest_folder(base_folder):
     date = datetime.now()
     while True:
@@ -263,7 +263,7 @@ def find_latest_folder(base_folder):
         if date.year < 2000:  # Prevent infinite loop
             break
     return None, None
-
+########################################################################################################################
 
 def save_custom_theme(sidebar_image_url, main_ui_image_url, sidebar_color, main_ui_color):
     conn = get_db_connection()
@@ -279,7 +279,7 @@ def save_custom_theme(sidebar_image_url, main_ui_image_url, sidebar_color, main_
     """, (st.session_state["username"], sidebar_image_url, main_ui_image_url, sidebar_color, main_ui_color))
     conn.commit()
     conn.close()
-
+########################################################################################################################
 def get_custom_theme():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -287,7 +287,7 @@ def get_custom_theme():
     theme = cursor.fetchone()
     conn.close()
     return theme
-
+########################################################################################################################
 def main_ui():
     global DEFAULT_DOWNLOAD_FOLDER
 
@@ -620,14 +620,14 @@ def main_ui():
     with tabs[4]:
         
         analyze_csv(file_path=DEFAULT_DOWNLOAD_FOLDER)
-
+########################################################################################################################
 def create_analysis_log(log_file_path, message):
     """
     Create or append to the Data Analysis Log file.
     """
     with open(log_file_path, "a", encoding="utf-8") as log_file:
         log_file.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
-
+########################################################################################################################
 def analyze_csv(file_path, recursion=False):
     if not recursion:
         st.subheader("Stock Analysis")
@@ -891,7 +891,7 @@ def analyze_files_separately(directory):
     create_analysis_log(log_file_path, "Data Analysis Process Completed")
     return all_buy_prices, all_sell_prices, all_top_amt, all_top_qty, all_top_short_qty, column_info
 
-
+########################################################################################################################
 def plot_prices(buy_prices, sell_prices, top_amt, top_qty, top_short_qty):
     sns.set_theme(style="whitegrid")
 
@@ -967,7 +967,7 @@ def plot_prices(buy_prices, sell_prices, top_amt, top_qty, top_short_qty):
     plt.tight_layout()
     st.pyplot(fig)
 
-
+########################################################################################################################
 
 def find_latest_folder(base_folder, days_back=0):
     date = datetime.now() - timedelta(days=days_back)
@@ -979,7 +979,7 @@ def find_latest_folder(base_folder, days_back=0):
         if date.year < 2000:  # Prevent infinite loop
             break
     return None, None
-
+########################################################################################################################
 def schedule_daily_download(schedule_time, email, log_file_path):
     def job():
         success = download_nse_reports(email)
@@ -1013,7 +1013,7 @@ def schedule_daily_download(schedule_time, email, log_file_path):
     """, (st.session_state["username"], schedule_time, email))
     conn.commit()
     conn.close()
-
+########################################################################################################################
 
 def get_previous_schedule():
     conn = get_db_connection()
@@ -1022,7 +1022,7 @@ def get_previous_schedule():
     schedule = cursor.fetchone()
     conn.close()
     return schedule
-
+########################################################################################################################
 def login():
     st.title("Login")
     identifier = st.text_input("Username or Email", key="login_identifier")
@@ -1039,7 +1039,7 @@ def login():
             st.rerun()
         else:
             st.error("Invalid username/email or password")
-
+########################################################################################################################
 def signup():
     st.title("Signup")
     new_username = st.text_input("New Username", key="signup_username")
@@ -1058,7 +1058,7 @@ def signup():
             st.success("User created successfully. Please login.")
         conn.close()
 
-
+########################################################################################################################
 # App execution logic
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -1072,3 +1072,4 @@ if not st.session_state["authenticated"]:
         signup()
 else:
     main_ui()
+########################################################################################################################
