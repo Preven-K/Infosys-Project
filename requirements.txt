@@ -2,7 +2,6 @@ selenium
 streamlit
 webdriver-manager
 matplot
-os
 pandas
 zipfile
 time
