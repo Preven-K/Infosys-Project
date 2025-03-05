@@ -3,7 +3,6 @@ streamlit
 webdriver-manager
 matplot
 pandas
-zipfile
 time
 schedule
 pyodbc
